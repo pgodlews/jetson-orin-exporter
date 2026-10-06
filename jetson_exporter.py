@@ -138,7 +138,7 @@ def collect(jetson):
             for unit_name, unit_data in eng_units.items():
                 g_engine_online.labels(engine=eng_name, unit=unit_name).set(
                     1 if unit_data.get('online') else 0)
-                if 'cur' in unit_data:
+                if unit_data.get('cur') is not None:
                     g_engine_freq.labels(engine=eng_name, unit=unit_name).set(
                         unit_data['cur'] * 1e3)
 
