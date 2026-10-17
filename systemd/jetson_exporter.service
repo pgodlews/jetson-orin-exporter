@@ -8,7 +8,7 @@ Type=simple
 User=jetson_exporter
 Group=jetson_exporter
 ExecStart=/usr/bin/python3 /opt/jetson_exporter/jetson_exporter.py
-Restart=on-failure
+Restart=always
 RestartSec=10s
 Environment=PYTHONUNBUFFERED=1
 
