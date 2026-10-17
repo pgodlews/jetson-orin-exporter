@@ -36,6 +36,8 @@ Exposes GPU, unified memory, per-core CPU, temperatures, power rails, fan, hardw
 
 All frequencies are reported in Hz and all memory/disk values in bytes, following [Prometheus naming conventions](https://prometheus.io/docs/practices/naming/).
 
+Labelled series disappear when jtop stops reporting them (offline CPU core, offline power rail, inactive thermal zone, etc.) rather than staying at their last value.
+
 ## Requirements
 
 - NVIDIA Jetson Orin running Ubuntu 22.04 / JetPack 6
