@@ -2,9 +2,9 @@
 
 ![Grafana Dashboard Screenshot](images/dashboard.png)
 
-Prometheus exporter for NVIDIA Jetson Orin devices using [jetson-stats](https://github.com/rbonghi/jetson_stats) (`jtop`).
+Prometheus exporter for NVIDIA Jetson devices using [jetson-stats](https://github.com/rbonghi/jetson_stats) (`jtop`).
 
-Exposes GPU, unified memory, per-core CPU, temperatures, power rails, fan, hardware engines, disk, and NV power profile as Prometheus metrics. Tested on **Jetson AGX Orin** and **Jetson Orin Nano**.
+Exposes GPU, unified memory, per-core CPU, temperatures, power rails, fan, hardware engines, disk, and NV power profile as Prometheus metrics. Tested on **Jetson AGX Orin**, **Jetson Orin Nano**, and **Jetson Nano 2GB**.
 
 ## Metrics
 
@@ -18,8 +18,8 @@ Exposes GPU, unified memory, per-core CPU, temperatures, power rails, fan, hardw
 | `jetson_cpu_usage_percent{core}` | Per-core CPU utilisation % — calculated as `100 - idle`, includes user+system+nice+iowait. No per-mode breakdown. |
 | `jetson_cpu_freq_hertz{core}` | Per-core CPU frequency (Hz) |
 | `jetson_temperature_celsius{zone}` | Temperature by thermal zone (°C) |
-| `jetson_power_total_watts` | Total board power (W) |
-| `jetson_power_rail_watts{rail}` | Per power rail (W) — rails vary by board |
+| `jetson_power_total_watts` | Total board power (W), when reported by a sensor |
+| `jetson_power_rail_watts{rail}` | Power per available rail (W) |
 | `jetson_fan_rpm{fan, index}` | Fan speed (RPM) |
 | `jetson_fan_speed_percent{fan, index}` | Fan duty cycle % |
 | `jetson_engine_freq_hertz{engine, unit}` | Hardware engine frequency (Hz) — DLA, NVENC, NVDEC, etc. |
@@ -40,19 +40,19 @@ Labelled series disappear when jtop stops reporting them (offline CPU core, offl
 
 ## Requirements
 
-- NVIDIA Jetson Orin running Ubuntu 22.04 / JetPack 6
-- [jetson-stats](https://github.com/rbonghi/jetson_stats) >= 4.3.0
-- Python 3.8+
+- Jetson Orin on JetPack 6 (Ubuntu 22.04), or Jetson Nano 2GB on JetPack 4.6.6 (Ubuntu 18.04).
+- Python 3.8+ on Orin. The requirements file selects Python 3.6-compatible packages on JetPack 4.
+- A running [jetson-stats](https://github.com/rbonghi/jetson_stats) (`jtop`) service.
 
 ## Installation
 
 **1. Install dependencies**
 
 ```bash
-sudo pip3 install jetson-stats prometheus_client
-# or
-pip3 install -r requirements.txt
+sudo /usr/bin/python3 -m pip install -r requirements.txt
 ```
+
+On JetPack 4, install `python3-pip` through APT if pip is missing. The Jetson Nano 2GB may expose no board power sensors. Power metrics are omitted when sensor readings are unavailable.
 
 **2. Copy the exporter**
 
@@ -94,20 +94,24 @@ scrape_configs:
       - targets:
           - orin-agx:9101
           - orin-nano:9101
+          - jetson:9101
 ```
 
 ## Grafana dashboard
 
 A ready-to-use dashboard is included at [`grafana-dashboards/jetson-orin-exporter-jtop.json`](grafana-dashboards/jetson-orin-exporter-jtop.json).
 
-Import it via **Dashboards → Import → Upload JSON file** and select your Prometheus datasource.
+Import it via **Dashboards → Import → Upload JSON file** and select your Prometheus datasource. The temperature overview uses the `tj` zone when present and otherwise shows the hottest reported zone. The NV Power Model panel shows the currently active profile.
 
-## Tested on
+## Hardware test matrix
 
-| Board | JetPack | jtop |
-|-------|---------|------|
-| Jetson AGX Orin 64GB | 6.2 (L4T 36.5.0) | 4.3.2 |
-| Jetson Orin Nano (Developer Kit Super) | 6.2 (L4T 36.5.0) | 4.3.2 |
+| Board | JetPack | Jetson Linux (L4T) | Ubuntu | Python | jetson-stats | prometheus-client |
+|-------|---------|---------------------|--------|--------|--------------|-------------------|
+| Jetson AGX Orin 64GB Developer Kit | 6.2.3 | 36.5.2 | 22.04.5 LTS | 3.10.12 | 4.3.2 | 0.24.1 |
+| Jetson Orin Nano Super Developer Kit | 6.2.3 | 36.5.2 | 22.04.5 LTS | 3.10.12 | 4.3.2 | 0.24.1 |
+| Jetson Nano 2GB Developer Kit | 4.6.6 | 32.7.6 | 18.04.6 LTS | 3.6.9 | 4.3.2 | 0.17.1 |
+
+All three boards were scraped by Prometheus and displayed together in Grafana. The Nano 2GB test also verified the `MAXN` and `5W` profiles and the absence of power metrics.
 
 ## License
 

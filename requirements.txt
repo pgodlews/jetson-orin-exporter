@@ -1,2 +1,6 @@
-jetson-stats>=4.3.0
-prometheus_client>=0.14.0
+jetson-stats==4.3.2; python_version < "3.8"
+prometheus_client==0.17.1; python_version < "3.8"
+distro==1.8.0; python_version < "3.8"
+smbus2==0.4.3; python_version < "3.8"
+jetson-stats>=4.3.0; python_version >= "3.8"
+prometheus_client>=0.14.0; python_version >= "3.8"
