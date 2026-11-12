@@ -103,13 +103,15 @@ A ready-to-use dashboard is included at [`grafana-dashboards/jetson-orin-exporte
 
 Import it via **Dashboards → Import → Upload JSON file** and select your Prometheus datasource. The temperature overview uses the `tj` zone when present and otherwise shows the hottest reported zone. The NV Power Model panel shows the currently active profile.
 
-## Tested on
+## Hardware test matrix
 
-| Board | JetPack | jtop |
-|-------|---------|------|
-| Jetson AGX Orin 64GB | 6.2 (L4T 36.5.0) | 4.3.2 |
-| Jetson Orin Nano (Developer Kit Super) | 6.2 (L4T 36.5.0) | 4.3.2 |
-| Jetson Nano 2GB Developer Kit | 4.6.6 (L4T 32.7.6) | 4.3.2 |
+| Board | JetPack | Jetson Linux (L4T) | Ubuntu | Python | jetson-stats | prometheus-client |
+|-------|---------|---------------------|--------|--------|--------------|-------------------|
+| Jetson AGX Orin 64GB Developer Kit | 6.2.3 | 36.5.2 | 22.04.5 LTS | 3.10.12 | 4.3.2 | 0.24.1 |
+| Jetson Orin Nano Super Developer Kit | 6.2.3 | 36.5.2 | 22.04.5 LTS | 3.10.12 | 4.3.2 | 0.24.1 |
+| Jetson Nano 2GB Developer Kit | 4.6.6 | 32.7.6 | 18.04.6 LTS | 3.6.9 | 4.3.2 | 0.17.1 |
+
+All three boards were scraped by Prometheus and displayed together in Grafana. The Nano 2GB test also verified the `MAXN` and `5W` profiles and the absence of power metrics.
 
 ## License
 

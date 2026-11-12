@@ -236,12 +236,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "jetson_temperature_celsius{instance=~\"$instance\", zone=\"tj\"}",
+          "expr": "jetson_temperature_celsius{instance=~\"$instance\", zone=\"tj\"} or on (instance) max by (instance) (jetson_temperature_celsius{instance=~\"$instance\"})",
           "legendFormat": "{{ instance }}",
           "refId": "A"
         }
       ],
-      "title": "Tj (Max Temp)",
+      "title": "Max Temperature",
       "type": "stat"
     },
     {
@@ -580,6 +580,8 @@
             "uid": "${datasource}"
           },
           "expr": "jetson_nvpmodel_info{instance=~\"$instance\"}",
+          "instant": true,
+          "range": false,
           "legendFormat": "{{ profile }}",
           "refId": "A"
         }

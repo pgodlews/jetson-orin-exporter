@@ -3,7 +3,7 @@
 
 import sys
 import time
-from prometheus_client import start_http_server, Gauge, Info
+from prometheus_client import start_http_server, Gauge, Info, REGISTRY
 from jtop import jtop
 
 PORT = 9101
@@ -26,7 +26,8 @@ g_cpu_freq  = Gauge('jetson_cpu_freq_hertz',    'CPU core frequency Hz',   ['cor
 g_temp = Gauge('jetson_temperature_celsius', 'Component temperature celsius', ['zone'])
 
 # Power
-g_power_total = Gauge('jetson_power_total_watts', 'Total board power watts')
+g_power_total = Gauge('jetson_power_total_watts', 'Total board power watts', registry=None)
+_power_total_registered = False
 g_power_rail  = Gauge('jetson_power_rail_watts',  'Power rail watts', ['rail'])
 
 # Swap memory
@@ -183,15 +184,21 @@ def collect_temperature(jetson, seen):
 
 def collect_power(jetson, seen):
     # jtop reports in mW -> watts
-    power = jetson.power
-    if power:
-        total = num((power.get('tot') or {}).get('power'))
-        if total is not None:
-            g_power_total.set(total / 1000)
-        for rail_name, rail_data in power.get('rail', {}).items():
-            rail_power = num(rail_data.get('power'))
-            if rail_data.get('online') and rail_power is not None:
-                set_labelled(seen, g_power_rail, rail_power / 1000, rail_name)
+    global _power_total_registered
+    power = jetson.power or {}
+    total = num((power.get('tot') or {}).get('power'))
+    if total is not None:
+        g_power_total.set(total / 1000)
+        if not _power_total_registered:
+            REGISTRY.register(g_power_total)
+            _power_total_registered = True
+    elif _power_total_registered:
+        REGISTRY.unregister(g_power_total)
+        _power_total_registered = False
+    for rail_name, rail_data in power.get('rail', {}).items():
+        rail_power = num(rail_data.get('power'))
+        if rail_data.get('online') and rail_power is not None:
+            set_labelled(seen, g_power_rail, rail_power / 1000, rail_name)
 
 
 def collect_engines(jetson, seen):
